@@ -1,13 +1,20 @@
 package assignment.csc214.wizard;
 
 
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -65,14 +72,61 @@ public class wizardFragment extends Fragment {
         // Inflate the layout for this fragment
         mWizardBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_wizard, container, false);
 
+        setHasOptionsMenu(true);
         View viewRoot = mWizardBinding.getRoot();
         getActivity().setTitle(""+day+" -- ");
         mWizardBinding.wizardPrompt.setText(prompt);
-        if (bundle!= null)
-            mWizardBinding.wizardImage.setImageBitmap((Bitmap) bundle.getParcelable("map"));
-        else
-            Toast.makeText(getContext(), "was null", Toast.LENGTH_SHORT).show();
         return viewRoot;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.main, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case R.id.miCompose:
+                Snackbar.make(mWizardBinding.getRoot(), "sent response", Snackbar.LENGTH_LONG).show();
+                sendEmail();
+                break;
+            default:
+                return false;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    protected void sendEmail() {
+        Log.i("Send email", "");
+
+        String[] TO = {"clark.famous@gmail.com"};
+        String[] CC = {"fclark2@u.rochester.edu"};
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setData(Uri.parse("mailto:"));
+        emailIntent.setType("text/plain");
+
+
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
+        emailIntent.putExtra(Intent.EXTRA_CC, CC);
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Today's response");
+        Toast.makeText(getContext(), getResponse(), Toast.LENGTH_SHORT).show();
+        emailIntent.putExtra(Intent.EXTRA_TEXT, getResponse());
+
+        try {
+            startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+            //finish();
+            Log.i("Finished sending email.", "");
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(getContext(), "There is no email client installed.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public String getResponse(){
+        return mWizardBinding.wizardEdit.getText().toString();
     }
 
 }

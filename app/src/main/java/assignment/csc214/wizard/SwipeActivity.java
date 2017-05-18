@@ -1,14 +1,17 @@
 package assignment.csc214.wizard;
 
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
@@ -23,11 +26,15 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +48,8 @@ import assignment.csc214.wizard.databinding.ActivitySwipeBinding;
 public class SwipeActivity extends AppCompatActivity {
 
     private SwipeCollectionPagerAdapter mSwipeView;
+
+    private DownloadManager mDownloadManager;
 
     private ViewPager mViewPager;
 
@@ -70,7 +79,11 @@ public class SwipeActivity extends AppCompatActivity {
                         .setAction("wizard", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                startDownload("http://www.tutorialspoint.com/green/images/logo.png");
+                                mDownloadManager = (DownloadManager)getSystemService(Context.DOWNLOAD_SERVICE);
+                                Uri uri = Uri.parse("https://docs.google.com/document/d/1oMMhT9gvcZ4jbr6Qva11hLRij2H5tMDOoqgCpk1BYkk/edit");
+                                DownloadManager.Request request = new DownloadManager.Request(uri);
+                                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                                Long reference = mDownloadManager.enqueue(request);
                             }
                         }).show();
             }
@@ -88,86 +101,6 @@ public class SwipeActivity extends AppCompatActivity {
         return networkInfo != null && networkInfo.isConnected();
     }
 
-    private void startDownload(String something){
-        if (isNetworkConnected()){
-            mProgressDialog = new ProgressDialog(this);
-            mProgressDialog.setMessage("Hold on one sec...");
-            mProgressDialog.setCancelable(false);
-            mProgressDialog.show();
-
-            final String url = something;
-
-            new Thread(){
-                public void run(){
-                    InputStream inputStream = null;
-                    Message message = Message.obtain();
-                    message.what = 1;
-
-                    try{
-                        inputStream  = openHttpConnection(url);
-                        mBitmap = BitmapFactory.decodeStream(inputStream);
-                        Bundle bunBunBundle = new Bundle();
-                        bunBunBundle.putParcelable("map", mBitmap);
-                        message.setData(bunBunBundle);
-                        inputStream.close();
-                    }catch (IOException ex){
-                        ex.printStackTrace();
-                    }
-                    messageHandler.sendMessage(message);
-                }
-            }.start();
-
-        }else{
-            new AlertDialog.Builder(this)
-                    .setTitle("No Internet Connection")
-                    .setMessage("It seems your internet connection is off. Please turn it on and try again")
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            //TODO set cancel and ok later
-                        }
-                    }).setIcon(android.R.drawable.ic_dialog_alert).show();
-        }
-       //new DownLoadWizardResponseTask(this).execute("https://api.github.com/repositories");
-    }
-
-    private Handler messageHandler = new Handler() {
-        public void handleMessage(Message message) {
-            super.handleMessage(message);
-            mSwipeBinding.swipeToolbarLayout.setBackground((Drawable) (message.getData().getParcelable("map")));
-            mProgressDialog.dismiss();
-        }
-    };
-
-    public InputStream openHttpConnection(String urlStr) {
-        InputStream inputStream = null;
-        int resCode = -1;
-
-        try {
-            URL url = new URL(urlStr);
-            URLConnection urlConn = url.openConnection();
-
-            if (!(urlConn instanceof HttpURLConnection)) {
-                throw new IOException("URL is not an Http URL");
-            }
-
-            HttpURLConnection httpConn = (HttpURLConnection) urlConn;
-            httpConn.setAllowUserInteraction(false);
-            httpConn.setInstanceFollowRedirects(true);
-            httpConn.setRequestMethod("GET");
-            httpConn.connect();
-            resCode = httpConn.getResponseCode();
-
-            if (resCode == HttpURLConnection.HTTP_OK) {
-                inputStream = httpConn.getInputStream();
-            }
-        }catch (MalformedURLException e) {
-            e.printStackTrace();
-        }catch (IOException e) {
-            e.printStackTrace();
-        }
-        return inputStream;
-    }
 
     public static class SwipeCollectionPagerAdapter extends FragmentStatePagerAdapter{
 
