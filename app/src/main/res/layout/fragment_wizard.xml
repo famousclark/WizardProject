@@ -1,0 +1,42 @@
+<layout >
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/wizard_prompt"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".4"
+            android:textSize="20sp"
+            android:textColor="#FFFFFFFF"
+            android:textAlignment="center"
+            android:background="@color/colorPrimaryDark"/>
+
+        <ImageView
+            android:id="@+id/wizard_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:contentDescription="something" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="4"
+            android:background="@color/colorPrimary">
+
+            <EditText
+                android:id="@+id/wizard_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="30sp"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#FFFFFFFF"
+                android:hint="@string/type_your_answer_here"/>
+        </ScrollView>
+
+    </LinearLayout>
+</layout>
